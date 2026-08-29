@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#12161B" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="برنامه روزانه" />
+<title>برنامه روزانه</title>
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%2312161B'/%3E%3Crect x='18' y='18' width='64' height='64' fill='none' stroke='%23FFB020' stroke-width='4'/%3E%3Cline x1='18' y1='38' x2='82' y2='38' stroke='%23FFB020' stroke-width='3'/%3E%3Cline x1='18' y1='58' x2='82' y2='58' stroke='%23FFB020' stroke-width='3'/%3E%3C/svg%3E" />
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%2312161B'/%3E%3Crect x='18' y='18' width='64' height='64' fill='none' stroke='%23FFB020' stroke-width='4'/%3E%3Cline x1='18' y1='38' x2='82' y2='38' stroke='%23FFB020' stroke-width='3'/%3E%3Cline x1='18' y1='58' x2='82' y2='58' stroke='%23FFB020' stroke-width='3'/%3E%3C/svg%3E" />
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap');
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin:0; padding:0; background:#12161B; }
+  body {
+    font-family: 'Vazirmatn','Tahoma',sans-serif;
+    color:#EDEFF2;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  input, select, button, textarea { font-family: inherit; }
+  ::selection { background:#FFB02055; }
+  .blueprint-bg {
+    background-image:
+      linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+    background-size: 24px 24px;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding-bottom: 48px;
+  }
+  #errorBanner {
+    display:none; background:#3A1620; border-bottom:2px solid #F76E9C; color:#FFD0DD;
+    padding: 12px 16px; font-size:12.5px; line-height:1.8; direction:ltr; text-align:left;
+    white-space:pre-wrap; word-break:break-word;
+  }
+  #errorBanner b { color:#F76E9C; direction:rtl; display:block; margin-bottom:4px; font-size:13px; }
+  #warnBanner {
+    display:none; background:rgba(255,176,32,0.1); border-bottom:1px solid rgba(255,176,32,0.4);
+    color:#FFB020; padding:10px 16px; font-size:12px; line-height:1.7;
+  }
+  .header { padding: max(20px, env(safe-area-inset-top)) 18px 16px; border-bottom:1px solid rgba(255,255,255,0.08); }
+  .header-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .nav-btn {
+    background: rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);
+    color:#EDEFF2; width:38px; height:38px; border-radius:9px; font-size:19px;
+    cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  .eyebrow { font-size:11px; letter-spacing:1.5px; color:#FFB020; font-weight:700; margin-bottom:4px; }
+  .datetext { font-size:19px; font-weight:700; }
+  .today-btn-wrap { text-align:center; margin-bottom:10px; }
+  .today-btn {
+    background:none; border:1px solid rgba(255,255,255,0.18); color:#8891A0;
+    font-size:12px; padding:5px 14px; border-radius:20px; cursor:pointer;
+  }
+  .progress-row { display:flex; justify-content:space-between; font-size:12px; color:#8891A0; margin-bottom:6px; }
+  .progress-track { height:8px; background:rgba(255,255,255,0.08); border-radius:4px; overflow:hidden; }
+  .progress-fill { height:100%; border-radius:4px; transition:width .3s ease; background:#FFB020; }
+
+  .stats-row { display:flex; gap:6px; padding:12px 18px 0; flex-wrap:wrap; }
+  .stat-pill { font-size:11px; font-weight:700; padding:4px 10px; border-radius:20px; border:1px solid rgba(255,255,255,0.1); }
+
+  .form { padding:16px 18px; border-bottom:1px solid rgba(255,255,255,0.08); }
+  .field {
+    width:100%; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12);
+    color:#EDEFF2; border-radius:9px; padding:11px 12px; font-size:14.5px; outline:none;
+  }
+  .row2 { display:flex; gap:8px; margin-top:8px; }
+  .add-btn {
+    width:100%; margin-top:10px; padding:12px; background:#FFB020; color:#12161B;
+    border:none; border-radius:10px; font-weight:700; font-size:14.5px; cursor:pointer;
+  }
+  .section-label { font-size:11px; color:#8891A0; font-weight:700; letter-spacing:1px; margin:14px 18px 8px; display:flex; justify-content:space-between; align-items:center; }
+  .untimed-wrap { padding: 0 18px; display:flex; flex-direction:column; gap:6px; }
+  .hour-row { display:flex; border-top:1px solid rgba(255,255,255,0.06); min-height:52px; padding:8px 0; }
+  .hour-label { flex:0 0 52px; font-size:12px; color:#5A6270; font-weight:600; font-variant-numeric:tabular-nums; padding-top:2px; }
+  .hour-tasks { flex:1; display:flex; flex-direction:column; gap:6px; }
+  .timeline-wrap { padding: 0 18px; }
+  .task-chip { display:flex; align-items:center; gap:10px; border-radius:9px; padding:10px 11px; }
+  .checkbox-ring { width:21px; height:21px; border-radius:5px; border:2px solid rgba(255,255,255,0.28); display:flex; align-items:center; justify-content:center; flex-shrink:0; cursor:pointer; }
+  .task-title { font-size:14px; font-weight:600; word-break:break-word; }
+  .task-meta { font-size:11px; margin-top:2px; font-weight:600; }
+  .del-btn { background:none; border:none; color:#5A6270; font-size:17px; cursor:pointer; padding:2px 6px; line-height:1; }
+  .empty { padding:28px 18px; text-align:center; color:#5A6270; font-size:13px; }
+  .save-err { margin-top:8px; font-size:12px; color:#F76E9C; }
+
+  .footer-actions { display:flex; gap:8px; padding: 18px 18px 4px; }
+  .ghost-btn {
+    flex:1; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.14);
+    color:#C8CDD6; font-size:12.5px; padding:10px; border-radius:9px; cursor:pointer;
+  }
+  .install-hint {
+    margin: 14px 18px 0; padding: 12px 14px; border:1px dashed rgba(255,176,32,0.4);
+    border-radius: 10px; font-size: 12.5px; color:#C8CDD6; line-height:1.9; background: rgba(255,176,32,0.05);
+  }
+  .install-hint b { color:#FFB020; }
+  .build-tag { text-align:center; font-size:10px; color:#3A4048; padding: 18px 18px 0; letter-spacing: 0.5px; }
+</style>
+</head>
+<body>
+<div id="errorBanner"><b>یه خطا پیش اومد — این پیام رو برای عیب‌یابی نگه دار:</b><span id="errorText"></span></div>
+<div id="warnBanner"></div>
+
+<div class="blueprint-bg">
+  <div class="header">
+    <div class="header-row">
+      <button class="nav-btn" id="nextDay" type="button">‹</button>
+      <div style="text-align:center;">
+        <div class="eyebrow">برنامه روزانه</div>
+        <div class="datetext" id="dateText"></div>
+      </div>
+      <button class="nav-btn" id="prevDay" type="button">›</button>
+    </div>
+    <div class="today-btn-wrap" id="todayWrap" style="display:none;">
+      <button class="today-btn" id="todayBtn" type="button">بازگشت به امروز</button>
+    </div>
+    <div class="progress-row">
+      <span id="progressText">0 از 0 کار انجام شده</span>
+      <span id="progressPct" style="font-weight:700;">0%</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%;"></div></div>
+  </div>
+
+  <div class="stats-row" id="statsRow"></div>
+
+  <form class="form" id="addForm">
+    <input class="field" id="titleInput" placeholder="کار جدید... مثلاً بازدید ملک با مشتری" autocomplete="off" />
+    <div class="row2">
+      <input class="field" type="time" id="timeInput" style="flex:0 0 112px;" />
+      <select class="field" id="catInput" style="flex:1;">
+        <option value="amlak">املاک</option>
+        <option value="deco">دکونیو</option>
+        <option value="bamor">باموور</option>
+        <option value="uni">دانشگاه</option>
+        <option value="shakhsi">شخصی</option>
+      </select>
+      <select class="field" id="prioInput" style="flex:0 0 96px;">
+        <option value="high">فوری</option>
+        <option value="normal" selected>عادی</option>
+        <option value="low">کم‌اهمیت</option>
+      </select>
+    </div>
+    <button type="submit" class="add-btn">+ افزودن به برنامه</button>
+    <div class="save-err" id="saveErr" style="display:none;">ذخیره‌سازی روی این حافظه ممکن نیست — کارها فقط تا وقتی صفحه بازه می‌مونن.</div>
+  </form>
+
+  <div id="untimedSection" style="display:none;">
+    <div class="section-label">بدون زمان مشخص</div>
+    <div class="untimed-wrap" id="untimedList"></div>
+  </div>
+
+  <div class="section-label">جدول زمان‌بندی</div>
+  <div class="timeline-wrap" id="timeline"></div>
+
+  <div class="empty" id="emptyMsg" style="display:none;">هنوز کاری اضافه نشده. اولین کار امروزت رو بالا وارد کن.</div>
+
+  <div class="footer-actions">
+    <button class="ghost-btn" id="exportBtn" type="button">⭳ گرفتن نسخه پشتیبان</button>
+    <button class="ghost-btn" id="importBtn" type="button">⭱ بازیابی از فایل</button>
+  </div>
+  <input type="file" id="importFile" accept="application/json" style="display:none;" />
+
+  <div class="install-hint">
+    برای نصب به‌عنوان اپ: تو کروم اندروید، منوی سه‌نقطه بالا سمت راست رو بزن و <b>«Add to Home screen»</b> رو انتخاب کن.
+  </div>
+  <div class="build-tag" id="buildTag"></div>
+</div>
+
+<script>
+window.__PLANNER_BUILD__ = "v2.0";
+
+// ---- Global error trap: if anything throws, show it on screen instead of failing silently ----
+window.addEventListener('error', function(e){
+  try {
+    var b = document.getElementById('errorBanner');
+    var t = document.getElementById('errorText');
+    if (b && t) {
+      t.textContent = (e.message || 'خطای نامشخص') + '\n' + (e.filename ? (e.filename + ':' + e.lineno) : '');
+      b.style.display = 'block';
+    }
+  } catch(_){}
+});
+
+(function(){
+  'use strict';
+
+  var CATEGORIES = {
+    amlak:   { label: "املاک",   color: "#5B9BD5", bg: "rgba(91,155,213,0.14)" },
+    deco:    { label: "دکونیو",  color: "#4FD1C5", bg: "rgba(79,209,197,0.14)" },
+    bamor:   { label: "باموور",  color: "#FFB020", bg: "rgba(255,176,32,0.14)" },
+    uni:     { label: "دانشگاه", color: "#B794F4", bg: "rgba(183,148,244,0.14)" },
+    shakhsi: { label: "شخصی",   color: "#F76E9C", bg: "rgba(247,110,156,0.16)" },
+  };
+  var CAT_ORDER = ["amlak","deco","bamor","uni","shakhsi"];
+  var HOURS = []; for (var h=6; h<=23; h++) HOURS.push(h);
+  var JALALI_MONTHS = ["فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"];
+  var WEEKDAYS = ["یکشنبه","دوشنبه","سه‌شنبه","چهارشنبه","پنجشنبه","جمعه","شنبه"];
+
+  function gregorianToJalali(gy, gm, gd) {
+    var g_d_m = [0,31,59,90,120,151,181,212,243,273,304,334];
+    var jy = gy <= 1600 ? 0 : 979;
+    gy -= gy <= 1600 ? 621 : 1600;
+    var gy2 = gm > 2 ? gy + 1 : gy;
+    var days = 365*gy + Math.floor((gy2+3)/4) - Math.floor((gy2+99)/100) + Math.floor((gy2+399)/400) - 80 + gd + g_d_m[gm-1];
+    jy += 33 * Math.floor(days/12053); days %= 12053;
+    jy += 4 * Math.floor(days/1461); days %= 1461;
+    if (days > 365) { jy += Math.floor((days-1)/365); days = (days-1) % 365; }
+    var jm = days < 186 ? 1 + Math.floor(days/31) : 7 + Math.floor((days-186)/30);
+    var jd = 1 + (days < 186 ? days % 31 : (days-186) % 30);
+    return [jy, jm, jd];
+  }
+  function formatJalali(date) {
+    var r = gregorianToJalali(date.getFullYear(), date.getMonth()+1, date.getDate());
+    return WEEKDAYS[date.getDay()] + " " + r[2] + " " + JALALI_MONTHS[r[1]-1] + " " + r[0];
+  }
+  function dateKey(d){
+    var y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
+    return y + "-" + m + "-" + day;
+  }
+  function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+
+  // ---- Storage layer with automatic fallback ----
+  var memoryStore = {};
+  var storageWorks = true;
+  (function testStorage(){
+    try {
+      var k = '__planner_test__';
+      localStorage.setItem(k, '1');
+      localStorage.removeItem(k);
+      storageWorks = true;
+    } catch(e) {
+      storageWorks = false;
+    }
+  })();
+
+  function storageGet(key){
+    if (storageWorks) {
+      try { return localStorage.getItem(key); } catch(e){ return memoryStore[key] || null; }
+    }
+    return memoryStore[key] || null;
+  }
+  function storageSet(key, value){
+    if (storageWorks) {
+      try { localStorage.setItem(key, value); return true; } catch(e){ /* fall through */ }
+    }
+    memoryStore[key] = value;
+    return storageWorks; // false signals "not truly persisted"
+  }
+  function storageAllKeys(){
+    if (storageWorks) {
+      try { return Object.keys(localStorage).filter(function(k){ return k.indexOf('planner:')===0; }); }
+      catch(e){ return Object.keys(memoryStore).filter(function(k){ return k.indexOf('planner:')===0; }); }
+    }
+    return Object.keys(memoryStore).filter(function(k){ return k.indexOf('planner:')===0; });
+  }
+
+  var current = new Date();
+  var tasks = [];
+
+  function storageKey(){ return 'planner:' + dateKey(current); }
+
+  function load(){
+    var raw = storageGet(storageKey());
+    try {
+      tasks = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(tasks)) tasks = [];
+    } catch(e) {
+      tasks = [];
+    }
+  }
+  function persist(){
+    var success = storageSet(storageKey(), JSON.stringify(tasks));
+    var errEl = document.getElementById('saveErr');
+    errEl.style.display = success ? 'none' : 'block';
+  }
+
+  function el(tag, props, children){
+    var e = document.createElement(tag);
+    if (props) for (var k in props) {
+      if (k === 'style') Object.assign(e.style, props.style);
+      else if (k.indexOf('on') === 0) e[k] = props[k];
+      else e.setAttribute(k, props[k]);
+    }
+    (children||[]).forEach(function(c){ e.appendChild(c); });
+    return e;
+  }
+
+  function render(){
+    document.getElementById('dateText').textContent = formatJalali(current);
+    var isToday = dateKey(current) === dateKey(new Date());
+    document.getElementById('todayWrap').style.display = isToday ? 'none' : 'block';
+
+    var done = 0;
+    for (var i=0;i<tasks.length;i++) if (tasks[i].done) done++;
+    var total = tasks.length;
+    var pct = total ? Math.round(done/total*100) : 0;
+    document.getElementById('progressText').textContent = done + " از " + total + " کار انجام شده";
+    document.getElementById('progressPct').textContent = pct + '%';
+    var fill = document.getElementById('progressFill');
+    fill.style.width = pct + '%';
+    fill.style.background = (pct===100 && total) ? '#4FD1C5' : '#FFB020';
+
+    // category stats
+    var statsRow = document.getElementById('statsRow');
+    statsRow.innerHTML = '';
+    CAT_ORDER.forEach(function(catId){
+      var c = CATEGORIES[catId];
+      var count = tasks.filter(function(t){ return t.cat === catId; }).length;
+      if (!count) return;
+      var pill = el('span', {
+        class: 'stat-pill',
+        style: { color: c.color, background: c.bg }
+      }, []);
+      pill.textContent = c.label + ' ' + count;
+      statsRow.appendChild(pill);
+    });
+
+    var untimed = tasks.filter(function(t){ return !t.time; });
+    var untimedSection = document.getElementById('untimedSection');
+    var untimedList = document.getElementById('untimedList');
+    untimedList.innerHTML = '';
+    if (untimed.length){
+      untimedSection.style.display = 'block';
+      untimed.forEach(function(t){ untimedList.appendChild(taskChip(t)); });
+    } else {
+      untimedSection.style.display = 'none';
+    }
+
+    var timeline = document.getElementById('timeline');
+    timeline.innerHTML = '';
+    HOURS.forEach(function(h){
+      var hourTasks = tasks.filter(function(t){ return t.time && parseInt(t.time.split(':')[0],10)===h; });
+      var row = el('div', { class: 'hour-row' }, []);
+      var label = el('div', { class: 'hour-label' }, []);
+      label.textContent = String(h).padStart(2,'0') + ':00';
+      var list = el('div', { class: 'hour-tasks' }, []);
+      hourTasks.forEach(function(t){ list.appendChild(taskChip(t)); });
+      row.appendChild(label);
+      row.appendChild(list);
+      timeline.appendChild(row);
+    });
+
+    document.getElementById('emptyMsg').style.display = total === 0 ? 'block' : 'none';
+  }
+
+  function taskChip(t){
+    var c = CATEGORIES[t.cat] || CATEGORIES.shakhsi;
+    var wrap = el('div', { class: 'task-chip' }, []);
+    wrap.style.background = c.bg;
+    wrap.style.border = '1px solid ' + (t.priority==='high' ? 'rgba(247,110,156,0.45)' : 'rgba(255,255,255,0.08)');
+    wrap.style.borderRight = '3px solid ' + (t.priority==='high' ? '#F76E9C' : t.priority==='low' ? 'rgba(255,255,255,0.1)' : c.color);
+    wrap.style.opacity = t.done ? '0.5' : '1';
+
+    var box = el('div', { class: 'checkbox-ring' }, []);
+    box.style.background = t.done ? c.color : 'transparent';
+    box.style.borderColor = t.done ? c.color : 'rgba(255,255,255,0.28)';
+    if (t.done){
+      box.innerHTML = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6.2L4.7 9L10 3" stroke="#12161B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    }
+    box.addEventListener('click', function(){ t.done = !t.done; persist(); render(); });
+
+    var mid = el('div', { style: { flex: '1', minWidth: '0' } }, []);
+    var titleEl = el('div', { class: 'task-title' }, []);
+    titleEl.style.textDecoration = t.done ? 'line-through' : 'none';
+    titleEl.style.color = t.done ? '#8891A0' : '#EDEFF2';
+    titleEl.textContent = t.title;
+    var metaEl = el('div', { class: 'task-meta' }, []);
+    metaEl.style.color = c.color;
+    metaEl.textContent = c.label + (t.time ? ' · ' + t.time : '');
+    mid.appendChild(titleEl); mid.appendChild(metaEl);
+
+    var del = el('button', { class: 'del-btn', type:'button' }, []);
+    del.textContent = '×';
+    del.addEventListener('click', function(){
+      tasks = tasks.filter(function(x){ return x.id !== t.id; });
+      persist(); render();
+    });
+
+    wrap.appendChild(box); wrap.appendChild(mid); wrap.appendChild(del);
+    return wrap;
+  }
+
+  function addTask(title, time, cat, priority){
+    tasks.push({ id: uid(), title: title, time: time || null, cat: cat, priority: priority, done: false });
+    tasks.sort(function(a,b){
+      if (a.time && b.time) return a.time.localeCompare(b.time);
+      if (a.time) return -1;
+      if (b.time) return 1;
+      return 0;
+    });
+    persist();
+  }
+
+  function exportBackup(){
+    var all = {};
+    storageAllKeys().forEach(function(k){
+      try { all[k] = JSON.parse(storageGet(k)); } catch(e){}
+    });
+    var blob = new Blob([JSON.stringify(all, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'planner-backup-' + dateKey(new Date()) + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  }
+
+  function importBackup(file){
+    var reader = new FileReader();
+    reader.onload = function(){
+      try {
+        var data = JSON.parse(reader.result);
+        Object.keys(data).forEach(function(k){
+          if (k.indexOf('planner:') === 0) storageSet(k, JSON.stringify(data[k]));
+        });
+        load(); render();
+        alert('بازیابی با موفقیت انجام شد.');
+      } catch(e){
+        alert('فایل پشتیبان معتبر نیست.');
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function init(){
+    document.getElementById('buildTag').textContent = 'build ' + window.__PLANNER_BUILD__ + (storageWorks ? '' : ' · حافظه محلی غیرفعال');
+
+    if (!storageWorks) {
+      var warn = document.getElementById('warnBanner');
+      warn.textContent = 'حافظه محلی این مرورگر در دسترس نیست (مثلاً حالت Incognito). کارها فقط تا وقتی صفحه باز بمونه نگه داشته می‌شن — قبل از بستن، از دکمه «گرفتن نسخه پشتیبان» استفاده کن.';
+      warn.style.display = 'block';
+    }
+
+    document.getElementById('prevDay').addEventListener('click', function(){ current.setDate(current.getDate()-1); load(); render(); });
+    document.getElementById('nextDay').addEventListener('click', function(){ current.setDate(current.getDate()+1); load(); render(); });
+    document.getElementById('todayBtn').addEventListener('click', function(){ current = new Date(); load(); render(); });
+
+    document.getElementById('addForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      var titleInput = document.getElementById('titleInput');
+      var timeInput = document.getElementById('timeInput');
+      var catInput = document.getElementById('catInput');
+      var prioInput = document.getElementById('prioInput');
+      var title = titleInput.value.trim();
+      if (!title) { titleInput.focus(); return; }
+      addTask(title, timeInput.value, catInput.value, prioInput.value);
+      titleInput.value = '';
+      timeInput.value = '';
+      render();
+      titleInput.focus();
+    });
+
+    document.getElementById('exportBtn').addEventListener('click', exportBackup);
+    document.getElementById('importBtn').addEventListener('click', function(){
+      document.getElementById('importFile').click();
+    });
+    document.getElementById('importFile').addEventListener('change', function(e){
+      if (e.target.files && e.target.files[0]) importBackup(e.target.files[0]);
+      e.target.value = '';
+    });
+
+    load();
+    render();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('sw.js').catch(function(){ /* offline caching just won't be available */ });
+    });
+  }
+
+  // expose for testing
+  window.__planner_test_hooks__ = { addTask: addTask, getTasks: function(){ return tasks; }, load: load, render: render };
+})();
+</script>
+</body>
+</html>
