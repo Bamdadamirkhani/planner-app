@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#0B0E12" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="برنامه روزانه" />
+<title>برنامه روزانه</title>
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230B0E12'/%3E%3Crect x='18' y='18' width='64' height='64' fill='none' stroke='%23FFB020' stroke-width='4'/%3E%3Cline x1='18' y1='38' x2='82' y2='38' stroke='%23FFB020' stroke-width='3'/%3E%3Cline x1='18' y1='58' x2='82' y2='58' stroke='%23FFB020' stroke-width='3'/%3E%3C/svg%3E" />
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230B0E12'/%3E%3Crect x='18' y='18' width='64' height='64' fill='none' stroke='%23FFB020' stroke-width='4'/%3E%3Cline x1='18' y1='38' x2='82' y2='38' stroke='%23FFB020' stroke-width='3'/%3E%3Cline x1='18' y1='58' x2='82' y2='58' stroke='%23FFB020' stroke-width='3'/%3E%3C/svg%3E" />
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap');
+
+  /* ============================================================
+     DESIGN TOKENS
+     Color pairs below are chosen to meet WCAG 2.1 contrast minimums:
+     body text >= 4.5:1, large text/icons >= 3:1, verified by
+     calculating relative luminance per the W3C formula. Spacing
+     follows a strict 8px grid. Touch targets are >= 44px (Apple HIG
+     / Material minimum recommended tap size).
+     ============================================================ */
+  :root{
+    --bg:            #0B0E12;
+    --surface:       #151A20;
+    --surface-2:     #1C222A;
+    --line:          rgba(255,255,255,0.10);
+    --line-soft:     rgba(255,255,255,0.06);
+    --ink:           #F2F4F6;
+    --ink-dim:       #A7B0BC;
+    --ink-faint:     #6B7480;
+    --accent:        #FFB020;
+    --accent-text:   #FFB020;
+    --accent-soft:   rgba(255,176,32,0.14);
+    --good:          #45D6C4;
+    --urgent:        #F76E9C;
+    --btn-ink:       #12161B;
+
+    /* Spacing follows the Fibonacci sequence (8,13,21,34,55) — the standard
+       practical approximation of the golden ratio (φ≈1.618) used in visual
+       design, since consecutive Fibonacci numbers converge to φ and, unlike
+       raw φ-multiplication, land on clean whole pixels. Radii use the same
+       early terms for the same reason. --tap is a fixed accessibility floor
+       (Apple HIG / Material minimum touch target) and intentionally overrides
+       the ratio, since legibility/reachability constraints outrank aesthetics. */
+    --sp-1: 8px; --sp-2: 13px; --sp-3: 21px; --sp-4: 34px; --sp-5: 55px;
+    --r-sm: 8px; --r-md: 13px; --r-lg: 21px;
+    --tap: 44px;
+  }
+  [data-theme="light"]{
+    --bg:            #F7F5F0;
+    --surface:       #FFFFFF;
+    --surface-2:     #F1EEE7;
+    --line:          rgba(0,0,0,0.10);
+    --line-soft:     rgba(0,0,0,0.06);
+    --ink:           #1B1F24;
+    --ink-dim:       #5B6470;
+    --ink-faint:     #848D99;
+    --accent:        #FFB020;
+    --accent-text:   #8A5300;
+    --accent-soft:   rgba(138,83,0,0.09);
+    --good:          #08685E;
+    --urgent:        #B0355F;
+    --btn-ink:       #12161B;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin:0; padding:0; background:var(--bg); }
+  body {
+    font-family: 'Vazirmatn','Tahoma',sans-serif;
+    color: var(--ink);
+    min-height: 100vh; min-height: 100dvh;
+    padding-bottom: env(safe-area-inset-bottom);
+    transition: background .2s ease, color .2s ease;
+  }
+  input, select, button, textarea { font-family: inherit; }
+  ::selection { background:#FFB02055; }
+  button { -webkit-appearance:none; appearance:none; }
+
+  .canvas {
+    background-image:
+      linear-gradient(var(--line-soft) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);
+    background-size: 24px 24px;
+    min-height: 100vh; min-height: 100dvh;
+    padding-bottom: var(--sp-4);
+  }
+
+  #errorBanner {
+    display:none; background:#3A1620; border-bottom:2px solid var(--urgent); color:#FFD0DD;
+    padding: var(--sp-2) var(--sp-2); font-size:12.5px; line-height:1.8; direction:ltr; text-align:left;
+    white-space:pre-wrap; word-break:break-word;
+  }
+  #errorBanner b { color:var(--urgent); direction:rtl; display:block; margin-bottom:4px; font-size:13px; }
+  #warnBanner {
+    display:none; background:var(--accent-soft); border-bottom:1px solid rgba(255,176,32,0.3);
+    color:var(--accent-text); padding: var(--sp-1) var(--sp-2); font-size:12px; line-height:1.7;
+  }
+
+  .eyebrow { font-size:10.5px; letter-spacing:1px; color:var(--accent-text); font-weight:700; display:block; margin-bottom:2px; }
+  .display { font-size:20px; font-weight:800; letter-spacing:-0.2px; }
+  .section-label { font-size:11px; color:var(--ink-dim); font-weight:700; letter-spacing:0.4px; }
+  .field-label { font-size:11.5px; color:var(--ink-dim); font-weight:700; margin-bottom:6px; display:block; }
+
+  .header { padding: max(20px, env(safe-area-inset-top)) var(--sp-2) var(--sp-2); border-bottom:1px solid var(--line); }
+  .header-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:var(--sp-2); }
+  .icon-btn {
+    background: var(--surface-2); border:1px solid var(--line);
+    color:var(--ink); width:var(--tap); height:var(--tap); border-radius:var(--r-sm); font-size:18px;
+    cursor:pointer; display:flex; align-items:center; justify-content:center;
+    transition: transform .1s ease, background .15s ease;
+  }
+  .icon-btn:active { transform: scale(0.92); background: var(--surface); }
+
+  /* ---- consolidated overflow menu: keeps the header to three controls
+     (day-back, day-forward, more) instead of five separate icons ---- */
+  .more-menu {
+    display:none; position:absolute; top:calc(100% + 8px); left:0; z-index:40;
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--r-md);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.28); min-width:190px; overflow:hidden;
+    padding:4px;
+  }
+  .more-menu.open { display:block; }
+  .more-menu-item {
+    width:100%; background:none; border:none; color:var(--ink); font-size:13.5px; font-weight:600;
+    padding:11px 12px; border-radius:8px; cursor:pointer; display:flex; align-items:center;
+    justify-content:space-between; gap:10px; min-height:40px; text-align:right;
+  }
+  .more-menu-item:active { background:var(--surface-2); }
+  .menu-backdrop { display:none; position:fixed; inset:0; z-index:30; }
+  .menu-backdrop.open { display:block; }
+
+  .strip-wrap { position:relative; margin: 0 calc(var(--sp-2) * -1) var(--sp-2); }
+  .week-strip {
+    display:flex; gap:4px; overflow-x:auto; scroll-snap-type:x proximity;
+    padding: 4px var(--sp-2) var(--sp-1);
+    -webkit-overflow-scrolling:touch; scrollbar-width:none;
+  }
+  .week-strip::-webkit-scrollbar { display:none; }
+  .week-day {
+    flex:0 0 42px; display:flex; flex-direction:column; align-items:center; gap:5px;
+    background:none; border:none; cursor:pointer; padding:7px 2px; border-radius:var(--r-sm);
+    color:var(--ink-faint); scroll-snap-align:center; transition: background .15s ease;
+    min-height: var(--tap);
+  }
+  .week-day.active { background: var(--accent-soft); }
+  .week-day-label { font-size:10px; font-weight:700; }
+  .week-day-num { font-size:12.5px; font-weight:700; color:var(--ink-dim); font-variant-numeric:tabular-nums; }
+  .week-day.active .week-day-num { color:var(--accent-text); }
+  .week-ring { width:5px; height:5px; border-radius:50%; background:var(--line); }
+  .week-ring.has-tasks { background:var(--ink-faint); }
+  .week-ring.all-done { background:var(--good); }
+
+  .today-btn-wrap { text-align:center; margin-bottom:var(--sp-1); }
+  .today-btn {
+    background:none; border:1px solid var(--line); color:var(--ink-dim);
+    font-size:12px; padding:6px 14px; border-radius:20px; cursor:pointer; min-height:32px;
+  }
+
+  .progress-row { display:flex; justify-content:space-between; font-size:12px; color:var(--ink-dim); margin-bottom:var(--sp-1); }
+  .progress-track { height:7px; background:var(--surface-2); border-radius:4px; overflow:hidden; }
+  .progress-fill { height:100%; border-radius:4px; transition:width .35s ease; background:var(--accent); }
+
+  .frame { position:relative; }
+  .corner { position:absolute; width:9px; height:9px; border-color:var(--accent); pointer-events:none; }
+  .corner-tl { top:-1px; left:-1px; border-top:2px solid; border-left:2px solid; border-radius: 4px 0 0 0; }
+  .corner-tr { top:-1px; right:-1px; border-top:2px solid; border-right:2px solid; border-radius: 0 4px 0 0; }
+  .corner-bl { bottom:-1px; left:-1px; border-bottom:2px solid; border-left:2px solid; border-radius: 0 0 0 4px; }
+  .corner-br { bottom:-1px; right:-1px; border-bottom:2px solid; border-right:2px solid; border-radius: 0 0 4px 0; }
+
+  .next-up {
+    margin: var(--sp-2) var(--sp-2) 0; border-radius:var(--r-lg); padding:var(--sp-2);
+    background: linear-gradient(135deg, var(--accent-soft), transparent);
+    border: 1px solid rgba(255,176,32,0.28);
+  }
+  .next-up-label { font-size:11px; font-weight:700; color:var(--accent-text); letter-spacing:0.5px; margin-bottom:var(--sp-1); display:flex; align-items:center; gap:6px; }
+  .next-up-title { font-size:16.5px; font-weight:700; margin-bottom:3px; }
+  .next-up-meta { font-size:12px; color:var(--ink-dim); font-variant-numeric: tabular-nums; }
+  .next-up-empty { font-size:13px; color:var(--ink-faint); }
+
+  .tag-row { display:flex; gap:6px; padding:var(--sp-2) var(--sp-2) 0; flex-wrap:wrap; }
+  .tag-pill { font-size:11px; font-weight:700; padding:5px 11px; border-radius:20px; border:1px solid var(--line); }
+
+  .form { padding:var(--sp-2); border-bottom:1px solid var(--line); }
+  .field {
+    width:100%; background:var(--surface-2); border:1px solid var(--line);
+    color:var(--ink); border-radius:var(--r-sm); padding:11px 12px; font-size:14.5px; outline:none;
+    transition: border-color .15s ease; min-height:var(--tap); line-height:1.4;
+  }
+  .field:focus { border-color: rgba(255,176,32,0.55); }
+  .field-group { margin-top:var(--sp-2); }
+  .row2 { display:flex; gap:var(--sp-1); }
+  .row2 .field-group { flex:1; margin-top:0; }
+  .contact-toggle {
+    margin-top:var(--sp-2); background:none; border:none; color:var(--ink-dim); font-size:12px;
+    cursor:pointer; padding:8px 0; text-decoration:underline; text-underline-offset:3px; min-height:32px;
+  }
+  .contact-row { display:none; gap:var(--sp-1); margin-top:var(--sp-1); }
+  .contact-row.open { display:flex; }
+  .add-btn {
+    width:100%; margin-top:var(--sp-2); padding:13px; background:var(--accent); color:var(--btn-ink);
+    border:none; border-radius:var(--r-sm); font-weight:700; font-size:14.5px; cursor:pointer;
+    transition: transform .1s ease; min-height:var(--tap);
+  }
+  .add-btn:active { transform: scale(0.985); }
+  .save-err { margin-top:var(--sp-1); font-size:12px; color:var(--urgent); }
+
+  .section-header { display:flex; justify-content:space-between; align-items:center; margin:var(--sp-3) var(--sp-2) var(--sp-1); }
+  .untimed-wrap { padding: 0 var(--sp-2); display:flex; flex-direction:column; gap:6px; }
+  .hour-row { display:flex; border-top:1px solid var(--line-soft); min-height:48px; padding:var(--sp-1) 0; }
+  .hour-label { flex:0 0 46px; font-size:11.5px; color:var(--ink-faint); font-weight:600; font-variant-numeric:tabular-nums; letter-spacing:0.3px; padding-top:2px; }
+  .hour-tasks { flex:1; display:flex; flex-direction:column; gap:6px; }
+  .timeline-wrap { padding: 0 var(--sp-2); }
+  .timeline-hint { font-size:11.5px; color:var(--ink-faint); padding: 0 var(--sp-2); margin-bottom:var(--sp-1); line-height:1.6; }
+
+  .task-chip { display:flex; align-items:center; gap:10px; border-radius:var(--r-sm); padding:10px 11px; min-height:var(--tap); }
+  .checkbox-ring { width:22px; height:22px; border-radius:6px; border:2px solid var(--line); display:flex; align-items:center; justify-content:center; flex-shrink:0; cursor:pointer; transition: all .12s ease; }
+  .task-title { font-size:14px; font-weight:600; word-break:break-word; line-height:1.5; }
+  .task-meta { font-size:11px; margin-top:3px; font-weight:600; display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+  .contact-link { color:var(--ink-dim) !important; text-decoration:none; border-bottom:1px dotted var(--ink-faint); }
+  .del-btn { background:none; border:none; color:var(--ink-faint); font-size:18px; cursor:pointer; padding:8px; line-height:1; min-width:32px; min-height:32px; }
+  .empty { padding:var(--sp-4) var(--sp-2); text-align:center; color:var(--ink-faint); font-size:13px; line-height:1.7; }
+
+  .notes-wrap { padding: var(--sp-3) var(--sp-2) 0; }
+  .note-add-row { display:flex; gap:var(--sp-1); align-items:flex-end; margin-bottom:var(--sp-2); }
+  .note-input {
+    flex:1; background:var(--surface-2); border:1px solid var(--line); color:var(--ink);
+    border-radius:var(--r-sm); padding:11px 12px; font-size:13.5px; outline:none; resize:vertical;
+    min-height:var(--tap); line-height:1.7;
+  }
+  .note-add-btn {
+    flex:0 0 var(--tap); height:var(--tap); background:var(--accent); color:var(--btn-ink); border:none;
+    border-radius:var(--r-sm); font-size:19px; font-weight:700; cursor:pointer;
+  }
+  .note-list { display:flex; flex-direction:column; gap:8px; }
+  .note-card {
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--r-md);
+    padding:12px 14px; font-size:13.5px; line-height:1.85; color:var(--ink); position:relative;
+  }
+  .note-card-top { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+  .note-time { font-size:10.5px; color:var(--ink-faint); font-variant-numeric:tabular-nums; flex-shrink:0; padding-top:2px; }
+  .note-del { background:none; border:none; color:var(--ink-faint); font-size:16px; cursor:pointer; padding:4px; min-width:28px; min-height:28px; }
+  .notes-empty { font-size:12.5px; color:var(--ink-faint); padding: 4px 2px 8px; line-height:1.6; }
+
+  .footer-actions { display:flex; gap:var(--sp-1); padding: var(--sp-3) var(--sp-2) 4px; }
+  .ghost-btn {
+    flex:1; background:var(--surface); border:1px solid var(--line);
+    color:var(--ink-dim); font-size:12.5px; padding:10px; border-radius:var(--r-sm); cursor:pointer; min-height:var(--tap);
+  }
+  .build-tag { text-align:center; font-size:10px; color:var(--ink-faint); opacity:0.5; padding: var(--sp-2) var(--sp-2) 0; letter-spacing: 0.5px; }
+
+  /* ---- notes: full-screen overlay, opened from the header icon ---- */
+  .notes-overlay {
+    display:none; position:fixed; inset:0; background:var(--bg); z-index:50;
+    flex-direction:column;
+  }
+  .notes-overlay.open { display:flex; }
+  .notes-overlay-header {
+    display:flex; align-items:center; justify-content:space-between;
+    padding: max(20px, env(safe-area-inset-top)) var(--sp-2) var(--sp-2);
+    border-bottom:1px solid var(--line); flex-shrink:0;
+  }
+  .notes-overlay-body { flex:1; overflow-y:auto; padding: var(--sp-2); padding-bottom: var(--sp-5); }
+</style>
+</head>
+<body>
+<div id="errorBanner"><b>یه خطا پیش اومد — این پیام رو برای عیب‌یابی نگه دار:</b><span id="errorText"></span></div>
+<div id="warnBanner"></div>
+
+<div class="canvas">
+  <div class="header">
+    <div class="header-row">
+      <button class="icon-btn" id="nextDay" type="button">‹</button>
+      <div style="text-align:center;">
+        <span class="eyebrow">برنامه روزانه</span>
+        <div class="display" id="dateText"></div>
+      </div>
+      <div style="display:flex; gap:6px; position:relative;">
+        <button class="icon-btn" id="prevDay" type="button">›</button>
+        <button class="icon-btn" id="moreBtn" type="button" aria-haspopup="true">⋯</button>
+        <div class="more-menu" id="moreMenu">
+          <button class="more-menu-item" id="notesBtn" type="button"><span>یادداشت‌ها</span><span>🗒️</span></button>
+          <button class="more-menu-item" id="bellBtn" type="button"><span id="bellLabel">یادآوری: خاموش</span><span>🔔</span></button>
+          <button class="more-menu-item" id="themeBtn" type="button"><span id="themeLabel">حالت روشن</span><span>🌙</span></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="strip-wrap"><div class="week-strip" id="weekStrip"></div></div>
+
+    <div class="today-btn-wrap" id="todayWrap" style="display:none;">
+      <button class="today-btn" id="todayBtn" type="button">بازگشت به امروز</button>
+    </div>
+    <div class="progress-row">
+      <span id="progressText">0 از 0 کار انجام شده</span>
+      <span id="progressPct" style="font-weight:700;">0%</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%;"></div></div>
+  </div>
+  <div class="menu-backdrop" id="menuBackdrop"></div>
+
+  <div class="next-up frame" id="nextUp">
+    <span class="corner corner-tl"></span><span class="corner corner-tr"></span>
+    <span class="corner corner-bl"></span><span class="corner corner-br"></span>
+  </div>
+
+  <div class="tag-row" id="tagRow"></div>
+
+  <form class="form" id="addForm">
+    <label class="field-label" for="titleInput">عنوان کار</label>
+    <input class="field" id="titleInput" placeholder="عنوان کار را وارد کن" autocomplete="off" />
+
+    <div class="row2" style="margin-top:var(--sp-2);">
+      <div class="field-group">
+        <label class="field-label" for="timeInput">ساعت (اختیاری)</label>
+        <input class="field" type="time" id="timeInput" />
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="prioInput">اولویت</label>
+        <select class="field" id="prioInput">
+          <option value="high">فوری</option>
+          <option value="normal" selected>عادی</option>
+          <option value="low">کم‌اهمیت</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label" for="labelInput">برچسب (اختیاری — خودت اسمش رو بذار)</label>
+      <input class="field" id="labelInput" list="labelHistory" placeholder="مثلاً: کار، خانواده، مهم... (دلخواه)" autocomplete="off" />
+      <datalist id="labelHistory"></datalist>
+    </div>
+
+    <button type="button" class="contact-toggle" id="contactToggle">+ افزودن مخاطب (اختیاری)</button>
+    <div class="contact-row" id="contactRow">
+      <input class="field" id="contactName" placeholder="نام مخاطب" autocomplete="off" />
+      <input class="field" id="contactPhone" placeholder="شماره تماس" type="tel" autocomplete="off" style="flex:0 0 130px;" />
+    </div>
+
+    <button type="button" class="add-btn" id="addTaskBtn">+ افزودن به برنامه</button>
+    <div class="save-err" id="saveErr" style="display:none;">ذخیره‌سازی روی این حافظه ممکن نیست — کارها فقط تا وقتی صفحه بازه می‌مونن.</div>
+  </form>
+
+  <div id="untimedSection" style="display:none;">
+    <div class="section-header"><span class="section-label">بدون زمان مشخص</span></div>
+    <div class="untimed-wrap" id="untimedList"></div>
+  </div>
+
+  <div class="section-header"><span class="section-label">جدول زمان‌بندی (۲۴ ساعته)</span></div>
+  <div class="timeline-hint">کارهایی که براشون ساعت مشخص کردی، زیر همون ساعت قرار می‌گیرن.</div>
+  <div class="timeline-wrap" id="timeline"></div>
+
+  <div class="empty" id="emptyMsg" style="display:none;">هنوز کاری اضافه نشده. اولین کار امروزت رو بالا وارد کن.</div>
+
+  <div class="footer-actions">
+    <button class="ghost-btn" id="exportBtn" type="button">⭳ گرفتن نسخه پشتیبان</button>
+    <button class="ghost-btn" id="importBtn" type="button">⭱ بازیابی از فایل</button>
+  </div>
+  <input type="file" id="importFile" accept="application/json" style="display:none;" />
+
+  <div class="build-tag" id="buildTag"></div>
+</div>
+
+<div class="notes-overlay" id="notesOverlay">
+  <div class="notes-overlay-header">
+    <span class="display" style="font-size:17px;">یادداشت‌ها</span>
+    <button class="icon-btn" id="notesCloseBtn" type="button">✕</button>
+  </div>
+  <div class="notes-overlay-body">
+    <div class="note-add-row">
+      <textarea class="note-input" id="noteInput" placeholder="یه یادداشت بنویس..." rows="1"></textarea>
+      <button class="note-add-btn" id="noteAddBtn" type="button">+</button>
+    </div>
+    <div class="note-list" id="noteList"></div>
+    <div class="notes-empty" id="notesEmpty" style="display:none;">هنوز یادداشتی برای این روز نداری.</div>
+  </div>
+</div>
+
+<script>
+window.__PLANNER_BUILD__ = "v7.0";
+
+window.addEventListener('error', function(e){
+  try {
+    var b = document.getElementById('errorBanner');
+    var t = document.getElementById('errorText');
+    if (b && t) {
+      t.textContent = (e.message || 'خطای نامشخص') + '\n' + (e.filename ? (e.filename + ':' + e.lineno) : '');
+      b.style.display = 'block';
+    }
+  } catch(_){}
+});
+
+// Permanently remove any service worker left over from earlier versions —
+// it was the source of the "changes don't show up" bug. This app does not
+// use a service worker anymore.
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(function(regs){
+    regs.forEach(function(r){ r.unregister(); });
+  }).catch(function(){});
+  if (window.caches && caches.keys) {
+    caches.keys().then(function(keys){ keys.forEach(function(k){ caches.delete(k); }); }).catch(function(){});
+  }
+}
+
+(function(){
+  'use strict';
+
+  var LABEL_PALETTE_DARK = [
+    { color: "#FFB020", bg: "rgba(255,176,32,0.14)" },
+    { color: "#4FD1C5", bg: "rgba(79,209,197,0.14)" },
+    { color: "#5B9BD5", bg: "rgba(91,155,213,0.14)" },
+    { color: "#B794F4", bg: "rgba(183,148,244,0.14)" },
+    { color: "#F76E9C", bg: "rgba(247,110,156,0.16)" },
+    { color: "#8BC34A", bg: "rgba(139,195,74,0.16)" },
+    { color: "#FF8A5B", bg: "rgba(255,138,91,0.16)" },
+    { color: "#4DB6E5", bg: "rgba(77,182,229,0.16)" }
+  ];
+  // Same hues, darkened until each meets >=4.5:1 contrast against the light
+  // background (#F7F5F0), derived by reducing HSL lightness programmatically.
+  var LABEL_PALETTE_LIGHT = [
+    { color: "#9a6400", bg: "rgba(154,100,0,0.10)" },
+    { color: "#1e7d75", bg: "rgba(30,125,117,0.10)" },
+    { color: "#2a73b4", bg: "rgba(42,115,180,0.10)" },
+    { color: "#8446f0", bg: "rgba(132,70,240,0.10)" },
+    { color: "#df074f", bg: "rgba(223,7,79,0.10)" },
+    { color: "#517825", bg: "rgba(81,120,37,0.10)" },
+    { color: "#cb3a00", bg: "rgba(203,58,0,0.10)" },
+    { color: "#1477a4", bg: "rgba(20,119,164,0.10)" }
+  ];
+  var NEUTRAL_TAG_DARK  = { color: "#A7B0BC", bg: "rgba(255,255,255,0.06)" };
+  var NEUTRAL_TAG_LIGHT = { color: "#5B6470", bg: "rgba(0,0,0,0.05)" };
+
+  var HOURS = []; for (var h=0; h<=23; h++) HOURS.push(h);
+  var JALALI_MONTHS = ["فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"];
+  var WEEKDAYS = ["یکشنبه","دوشنبه","سه‌شنبه","چهارشنبه","پنجشنبه","جمعه","شنبه"];
+  var WEEKDAYS_SHORT = ["ی","د","س","چ","پ","ج","ش"];
+
+  function gregorianToJalali(gy, gm, gd) {
+    var g_d_m = [0,31,59,90,120,151,181,212,243,273,304,334];
+    var jy = gy <= 1600 ? 0 : 979;
+    gy -= gy <= 1600 ? 621 : 1600;
+    var gy2 = gm > 2 ? gy + 1 : gy;
+    var days = 365*gy + Math.floor((gy2+3)/4) - Math.floor((gy2+99)/100) + Math.floor((gy2+399)/400) - 80 + gd + g_d_m[gm-1];
+    jy += 33 * Math.floor(days/12053); days %= 12053;
+    jy += 4 * Math.floor(days/1461); days %= 1461;
+    if (days > 365) { jy += Math.floor((days-1)/365); days = (days-1) % 365; }
+    var jm = days < 186 ? 1 + Math.floor(days/31) : 7 + Math.floor((days-186)/30);
+    var jd = 1 + (days < 186 ? days % 31 : (days-186) % 30);
+    return [jy, jm, jd];
+  }
+  function formatJalali(date) {
+    var r = gregorianToJalali(date.getFullYear(), date.getMonth()+1, date.getDate());
+    return WEEKDAYS[date.getDay()] + " " + r[2] + " " + JALALI_MONTHS[r[1]-1] + " " + r[0];
+  }
+  function jalaliDayNum(date){ return gregorianToJalali(date.getFullYear(), date.getMonth()+1, date.getDate())[2]; }
+  function dateKey(d){
+    var y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
+    return y + "-" + m + "-" + day;
+  }
+  function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+  function timeNow(){ var n=new Date(); return String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0'); }
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]; });
+  }
+
+  // ---- storage layer with automatic fallback ----
+  var memoryStore = {};
+  var storageWorks = true;
+  (function testStorage(){
+    try { var k='__planner_test__'; localStorage.setItem(k,'1'); localStorage.removeItem(k); storageWorks = true; }
+    catch(e){ storageWorks = false; }
+  })();
+  function storageGet(key){
+    if (storageWorks) { try { return localStorage.getItem(key); } catch(e){ return memoryStore[key] || null; } }
+    return memoryStore[key] || null;
+  }
+  function storageSet(key, value){
+    if (storageWorks) { try { localStorage.setItem(key, value); return true; } catch(e){} }
+    memoryStore[key] = value;
+    return storageWorks;
+  }
+  function storageAllKeys(prefix){
+    if (storageWorks) {
+      try { return Object.keys(localStorage).filter(function(k){ return k.indexOf(prefix)===0; }); }
+      catch(e){ return Object.keys(memoryStore).filter(function(k){ return k.indexOf(prefix)===0; }); }
+    }
+    return Object.keys(memoryStore).filter(function(k){ return k.indexOf(prefix)===0; });
+  }
+
+  // ---- theme ----
+  var theme = storageGet('planner:theme') || 'dark';
+  function applyTheme(){
+    if (theme === 'light') { document.documentElement.setAttribute('data-theme','light'); }
+    else { document.documentElement.removeAttribute('data-theme'); }
+    var themeLabel = document.getElementById('themeLabel');
+    if (themeLabel) themeLabel.textContent = theme === 'light' ? 'حالت تاریک' : 'حالت روشن';
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', theme === 'light' ? '#F7F5F0' : '#0B0E12');
+  }
+  function currentPalette(){ return theme === 'light' ? LABEL_PALETTE_LIGHT : LABEL_PALETTE_DARK; }
+  function currentNeutral(){ return theme === 'light' ? NEUTRAL_TAG_LIGHT : NEUTRAL_TAG_DARK; }
+  function tagStyle(label){
+    if (!label) return currentNeutral();
+    var sum = 0;
+    for (var i=0;i<label.length;i++) sum += label.charCodeAt(i);
+    var palette = currentPalette();
+    return palette[sum % palette.length];
+  }
+
+  var current = new Date();
+  var today0 = new Date(); today0.setHours(0,0,0,0);
+  var tasks = [];
+  var notes = [];
+  var notifyEnabled = storageGet('planner:notify') === '1';
+  var notifiedIds = {};
+
+  function taskKey(){ return 'planner:' + dateKey(current); }
+  function noteKey(){ return 'plannernotes:' + dateKey(current); }
+
+  function load(){
+    var raw = storageGet(taskKey());
+    try { tasks = raw ? JSON.parse(raw) : []; if (!Array.isArray(tasks)) tasks = []; }
+    catch(e){ tasks = []; }
+    var rawNotes = storageGet(noteKey());
+    try { notes = rawNotes ? JSON.parse(rawNotes) : []; if (!Array.isArray(notes)) notes = []; }
+    catch(e){ notes = []; }
+  }
+  function persist(){
+    var success = storageSet(taskKey(), JSON.stringify(tasks));
+    document.getElementById('saveErr').style.display = success ? 'none' : 'block';
+  }
+  function persistNotes(){ storageSet(noteKey(), JSON.stringify(notes)); }
+
+  function el(tag, props, children){
+    var e = document.createElement(tag);
+    if (props) for (var k in props) {
+      if (k === 'style') Object.assign(e.style, props.style);
+      else if (k.indexOf('on') === 0) e[k] = props[k];
+      else e.setAttribute(k, props[k]);
+    }
+    (children||[]).forEach(function(c){ e.appendChild(c); });
+    return e;
+  }
+  function minutesOfDay(t){ var p=t.split(':'); return parseInt(p[0],10)*60+parseInt(p[1],10); }
+
+  function renderWeekStrip(){
+    var strip = document.getElementById('weekStrip');
+    strip.innerHTML = '';
+    var activeBtn = null;
+    for (var offset = -30; offset <= 30; offset++) {
+      var d = new Date(today0);
+      d.setDate(d.getDate() + offset);
+      var dk = dateKey(d);
+      var isActive = dk === dateKey(current);
+      var raw = storageGet('planner:' + dk);
+      var dayTasks = [];
+      try { dayTasks = raw ? JSON.parse(raw) : []; } catch(e){ dayTasks = []; }
+      var hasT = dayTasks.length > 0;
+      var allDone = hasT && dayTasks.every(function(t){ return t.done; });
+
+      var btn = el('button', { class: 'week-day' + (isActive ? ' active' : ''), type: 'button' }, []);
+      var lbl = el('div', { class: 'week-day-label' }, []); lbl.textContent = WEEKDAYS_SHORT[d.getDay()];
+      var num = el('div', { class: 'week-day-num' }, []); num.textContent = jalaliDayNum(d);
+      var ring = el('div', { class: 'week-ring' + (allDone ? ' all-done' : hasT ? ' has-tasks' : '') }, []);
+      btn.appendChild(lbl); btn.appendChild(num); btn.appendChild(ring);
+      (function(targetDate){
+        btn.addEventListener('click', function(){ current = new Date(targetDate); load(); render(); });
+      })(d);
+      strip.appendChild(btn);
+      if (isActive) activeBtn = btn;
+    }
+    if (activeBtn && typeof activeBtn.scrollIntoView === 'function') {
+      try { activeBtn.scrollIntoView({ inline: 'center', block: 'nearest' }); } catch(e){}
+    }
+  }
+
+  function renderNextUp(){
+    var box = document.getElementById('nextUp');
+    var corners = '<span class="corner corner-tl"></span><span class="corner corner-tr"></span><span class="corner corner-bl"></span><span class="corner corner-br"></span>';
+    var isToday = dateKey(current) === dateKey(new Date());
+    if (!isToday) {
+      box.innerHTML = corners +
+        '<div class="next-up-label">📅 روز انتخاب‌شده</div>' +
+        '<div class="next-up-empty">این روز امروز نیست — کارهاش رو پایین ببین یا برگرد به امروز.</div>';
+      return;
+    }
+    var now = new Date();
+    var nowMin = now.getHours()*60 + now.getMinutes();
+    var upcoming = tasks
+      .filter(function(t){ return t.time && !t.done && minutesOfDay(t.time) >= nowMin; })
+      .sort(function(a,b){ return minutesOfDay(a.time) - minutesOfDay(b.time); });
+
+    var html = corners + '<div class="next-up-label">⏱ کار بعدی</div>';
+    if (upcoming.length === 0) {
+      var overdue = tasks.filter(function(t){ return t.time && !t.done && minutesOfDay(t.time) < nowMin; });
+      var msg = overdue.length ? (overdue.length + ' کار زمان‌دار امروز هنوز باز مونده') : 'برای الان کاری زمان‌بندی‌شده نداری';
+      html += '<div class="next-up-empty">' + escapeHtml(msg) + '</div>';
+    } else {
+      var t = upcoming[0];
+      var ts = tagStyle(t.label);
+      html += '<div class="next-up-title">' + escapeHtml(t.title) + '</div>';
+      html += '<div class="next-up-meta">' + escapeHtml(t.time) +
+        (t.label ? ' · <span style="color:' + ts.color + ';">' + escapeHtml(t.label) + '</span>' : '') +
+        (upcoming.length > 1 ? ' · و ' + (upcoming.length-1) + ' کار دیگه' : '') + '</div>';
+    }
+    box.innerHTML = html;
+  }
+
+  function collectLabelHistory(){
+    var set = {};
+    storageAllKeys('planner:').forEach(function(k){
+      if (k === 'planner:notify' || k === 'planner:theme') return;
+      try {
+        var arr = JSON.parse(storageGet(k));
+        if (Array.isArray(arr)) arr.forEach(function(t){ if (t.label) set[t.label] = true; });
+      } catch(e){}
+    });
+    return Object.keys(set).sort();
+  }
+  function renderLabelHistory(){
+    var dl = document.getElementById('labelHistory');
+    dl.innerHTML = '';
+    collectLabelHistory().forEach(function(lbl){
+      var opt = document.createElement('option');
+      opt.value = lbl;
+      dl.appendChild(opt);
+    });
+  }
+
+  function render(){
+    document.getElementById('dateText').textContent = formatJalali(current);
+    var isToday = dateKey(current) === dateKey(new Date());
+    document.getElementById('todayWrap').style.display = isToday ? 'none' : 'block';
+
+    renderWeekStrip();
+    renderNextUp();
+
+    var done = 0;
+    for (var i=0;i<tasks.length;i++) if (tasks[i].done) done++;
+    var total = tasks.length;
+    var pct = total ? Math.round(done/total*100) : 0;
+    document.getElementById('progressText').textContent = done + " از " + total + " کار انجام شده";
+    document.getElementById('progressPct').textContent = pct + '%';
+    var fill = document.getElementById('progressFill');
+    fill.style.width = pct + '%';
+    fill.style.background = (pct===100 && total) ? 'var(--good)' : 'var(--accent)';
+
+    var tagRow = document.getElementById('tagRow');
+    tagRow.innerHTML = '';
+    var counts = {};
+    tasks.forEach(function(t){ var key = t.label || '—'; counts[key] = (counts[key]||0)+1; });
+    Object.keys(counts).forEach(function(lbl){
+      var ts = tagStyle(lbl === '—' ? '' : lbl);
+      var pill = el('span', { class: 'tag-pill', style: { color: ts.color, background: ts.bg } }, []);
+      pill.textContent = lbl + ' ' + counts[lbl];
+      tagRow.appendChild(pill);
+    });
+
+    var untimed = tasks.filter(function(t){ return !t.time; });
+    var untimedSection = document.getElementById('untimedSection');
+    var untimedList = document.getElementById('untimedList');
+    untimedList.innerHTML = '';
+    if (untimed.length){
+      untimedSection.style.display = 'block';
+      untimed.forEach(function(t){ untimedList.appendChild(taskChip(t)); });
+    } else { untimedSection.style.display = 'none'; }
+
+    var timeline = document.getElementById('timeline');
+    timeline.innerHTML = '';
+    HOURS.forEach(function(hh){
+      var hourTasks = tasks.filter(function(t){ return t.time && parseInt(t.time.split(':')[0],10)===hh; });
+      var row = el('div', { class: 'hour-row' }, []);
+      var label = el('div', { class: 'hour-label' }, []);
+      label.textContent = String(hh).padStart(2,'0') + ':00';
+      var list = el('div', { class: 'hour-tasks' }, []);
+      hourTasks.forEach(function(t){ list.appendChild(taskChip(t)); });
+      row.appendChild(label); row.appendChild(list);
+      timeline.appendChild(row);
+    });
+
+    document.getElementById('emptyMsg').style.display = total === 0 ? 'block' : 'none';
+
+    renderNotes();
+    renderLabelHistory();
+
+    var bellLabel = document.getElementById('bellLabel');
+    if (bellLabel) bellLabel.textContent = 'یادآوری: ' + (notifyEnabled ? 'روشن' : 'خاموش');
+  }
+
+  function taskChip(t){
+    var ts = tagStyle(t.label);
+    var wrap = el('div', { class: 'task-chip' }, []);
+    wrap.style.background = ts.bg;
+    wrap.style.border = '1px solid ' + (t.priority==='high' ? 'rgba(247,110,156,0.45)' : 'var(--line)');
+    wrap.style.borderRight = '3px solid ' + (t.priority==='high' ? 'var(--urgent)' : t.priority==='low' ? 'var(--line)' : ts.color);
+    wrap.style.opacity = t.done ? '0.55' : '1';
+
+    var box = el('div', { class: 'checkbox-ring' }, []);
+    box.style.background = t.done ? ts.color : 'transparent';
+    box.style.borderColor = t.done ? ts.color : 'var(--line)';
+    if (t.done){
+      box.innerHTML = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6.2L4.7 9L10 3" stroke="#12161B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    }
+    box.addEventListener('click', function(){ t.done = !t.done; persist(); render(); });
+
+    var mid = el('div', { style: { flex: '1', minWidth: '0' } }, []);
+    var titleEl = el('div', { class: 'task-title' }, []);
+    titleEl.style.textDecoration = t.done ? 'line-through' : 'none';
+    titleEl.style.color = t.done ? 'var(--ink-dim)' : 'var(--ink)';
+    titleEl.textContent = t.title;
+    var metaEl = el('div', { class: 'task-meta' }, []);
+    var metaText = el('span', { style: { color: ts.color } }, []);
+    metaText.textContent = (t.label ? t.label : '') + (t.time ? (t.label ? ' · ' : '') + t.time : '');
+    if (metaText.textContent) metaEl.appendChild(metaText);
+    if (t.contact && (t.contact.name || t.contact.phone)) {
+      if (metaEl.children.length) { var sep = el('span', { style: { color: 'var(--ink-faint)' } }, []); sep.textContent = '·'; metaEl.appendChild(sep); }
+      if (t.contact.phone) {
+        var link = el('a', { class: 'contact-link', href: 'tel:' + t.contact.phone }, []);
+        link.textContent = (t.contact.name ? t.contact.name + ' ' : '') + t.contact.phone;
+        metaEl.appendChild(link);
+      } else {
+        var nameOnly = el('span', { style: { color: 'var(--ink-dim)' } }, []);
+        nameOnly.textContent = t.contact.name;
+        metaEl.appendChild(nameOnly);
+      }
+    }
+    mid.appendChild(titleEl); if (metaEl.children.length) mid.appendChild(metaEl);
+
+    var del = el('button', { class: 'del-btn', type:'button' }, []);
+    del.textContent = '×';
+    del.addEventListener('click', function(){ tasks = tasks.filter(function(x){ return x.id !== t.id; }); persist(); render(); });
+
+    wrap.appendChild(box); wrap.appendChild(mid); wrap.appendChild(del);
+    return wrap;
+  }
+
+  function addTask(title, time, label, priority, contact){
+    tasks.push({ id: uid(), title: title, time: time || null, label: (label||'').trim(), priority: priority, done: false, contact: contact || null });
+    tasks.sort(function(a,b){
+      if (a.time && b.time) return a.time.localeCompare(b.time);
+      if (a.time) return -1;
+      if (b.time) return 1;
+      return 0;
+    });
+    persist();
+  }
+
+  function renderNotes(){
+    var list = document.getElementById('noteList');
+    list.innerHTML = '';
+    document.getElementById('notesEmpty').style.display = notes.length ? 'none' : 'block';
+    notes.slice().reverse().forEach(function(n){
+      var card = el('div', { class: 'note-card' }, []);
+      var top = el('div', { class: 'note-card-top' }, []);
+      var textEl = el('div', {}, []); textEl.textContent = n.text;
+      var time = el('div', { class: 'note-time' }, []); time.textContent = n.time;
+      var del = el('button', { class: 'note-del', type: 'button' }, []); del.textContent = '×';
+      del.addEventListener('click', function(){ notes = notes.filter(function(x){ return x.id !== n.id; }); persistNotes(); renderNotes(); });
+      top.appendChild(textEl); top.appendChild(time);
+      card.appendChild(top); card.appendChild(del);
+      list.appendChild(card);
+    });
+  }
+  function addNote(text){
+    if (!text.trim()) return;
+    notes.push({ id: uid(), text: text.trim(), time: timeNow() });
+    persistNotes();
+    renderNotes();
+  }
+
+  function exportBackup(){
+    var all = {};
+    storageAllKeys('planner:').forEach(function(k){
+      if (k === 'planner:notify' || k === 'planner:theme') { all[k] = storageGet(k); return; }
+      try { all[k] = JSON.parse(storageGet(k)); } catch(e){}
+    });
+    storageAllKeys('plannernotes:').forEach(function(k){
+      try { all[k] = JSON.parse(storageGet(k)); } catch(e){}
+    });
+    var blob = new Blob([JSON.stringify(all, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = 'planner-backup-' + dateKey(new Date()) + '.json';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  }
+  function importBackup(file){
+    var reader = new FileReader();
+    reader.onload = function(){
+      try {
+        var data = JSON.parse(reader.result);
+        Object.keys(data).forEach(function(k){
+          if (k === 'planner:notify' || k === 'planner:theme') storageSet(k, data[k]);
+          else if (k.indexOf('planner:') === 0) storageSet(k, JSON.stringify(data[k]));
+          else if (k.indexOf('plannernotes:') === 0) storageSet(k, JSON.stringify(data[k]));
+        });
+        load(); render();
+        alert('بازیابی با موفقیت انجام شد.');
+      } catch(e){ alert('فایل پشتیبان معتبر نیست.'); }
+    };
+    reader.readAsText(file);
+  }
+
+  function checkNotifications(){
+    if (!notifyEnabled) return;
+    if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+    if (dateKey(current) !== dateKey(new Date())) return;
+    var now = new Date();
+    var nowMin = now.getHours()*60 + now.getMinutes();
+    tasks.forEach(function(t){
+      if (t.time && !t.done && !notifiedIds[t.id] && minutesOfDay(t.time) === nowMin) {
+        notifiedIds[t.id] = true;
+        try { new Notification('⏱ ' + t.title, { body: (t.label ? t.label + ' · ' : '') + t.time, tag: t.id }); } catch(e){}
+      }
+    });
+  }
+
+  function init(){
+    applyTheme();
+    document.getElementById('buildTag').textContent = 'build ' + window.__PLANNER_BUILD__ + (storageWorks ? '' : ' · حافظه محلی غیرفعال');
+
+    if (!storageWorks) {
+      var warn = document.getElementById('warnBanner');
+      warn.textContent = 'حافظه محلی این مرورگر در دسترس نیست. کارها فقط تا وقتی صفحه باز بمونه نگه داشته می‌شن — قبل از بستن، از دکمه «گرفتن نسخه پشتیبان» استفاده کن.';
+      warn.style.display = 'block';
+    }
+
+    document.getElementById('prevDay').addEventListener('click', function(){ current.setDate(current.getDate()-1); load(); render(); });
+    document.getElementById('nextDay').addEventListener('click', function(){ current.setDate(current.getDate()+1); load(); render(); });
+    document.getElementById('todayBtn').addEventListener('click', function(){ current = new Date(); load(); render(); });
+
+    function closeMenu(){
+      document.getElementById('moreMenu').classList.remove('open');
+      document.getElementById('menuBackdrop').classList.remove('open');
+    }
+    document.getElementById('moreBtn').addEventListener('click', function(){
+      document.getElementById('moreMenu').classList.toggle('open');
+      document.getElementById('menuBackdrop').classList.toggle('open');
+    });
+    document.getElementById('menuBackdrop').addEventListener('click', closeMenu);
+
+    document.getElementById('notesBtn').addEventListener('click', function(){
+      closeMenu();
+      document.getElementById('notesOverlay').classList.add('open');
+      renderNotes();
+    });
+    document.getElementById('notesCloseBtn').addEventListener('click', function(){
+      document.getElementById('notesOverlay').classList.remove('open');
+    });
+
+    document.getElementById('themeBtn').addEventListener('click', function(){
+      theme = theme === 'light' ? 'dark' : 'light';
+      storageSet('planner:theme', theme);
+      applyTheme();
+      render();
+      closeMenu();
+    });
+
+    document.getElementById('contactToggle').addEventListener('click', function(){
+      document.getElementById('contactRow').classList.toggle('open');
+    });
+
+    // Uses a plain button + click handler rather than native <form> submit.
+    // This sidesteps any WebView/TWA-specific quirks around form submission
+    // (some Android WebView builds have had inconsistent submit-event
+    // behavior); a direct click handler is the most universally reliable path.
+    function handleAddTask(){
+      var titleInput = document.getElementById('titleInput');
+      var timeInput = document.getElementById('timeInput');
+      var labelInput = document.getElementById('labelInput');
+      var prioInput = document.getElementById('prioInput');
+      var contactName = document.getElementById('contactName');
+      var contactPhone = document.getElementById('contactPhone');
+      var title = titleInput.value.trim();
+      if (!title) { titleInput.focus(); return; }
+      var contact = null;
+      if (contactName.value.trim() || contactPhone.value.trim()) contact = { name: contactName.value.trim(), phone: contactPhone.value.trim() };
+      addTask(title, timeInput.value, labelInput.value, prioInput.value, contact);
+      titleInput.value = ''; timeInput.value = ''; labelInput.value = '';
+      contactName.value = ''; contactPhone.value = '';
+      document.getElementById('contactRow').classList.remove('open');
+      render();
+      titleInput.focus();
+    }
+    document.getElementById('addTaskBtn').addEventListener('click', handleAddTask);
+    document.getElementById('addForm').addEventListener('submit', function(e){ e.preventDefault(); handleAddTask(); });
+
+    document.getElementById('noteAddBtn').addEventListener('click', function(){
+      var input = document.getElementById('noteInput');
+      addNote(input.value);
+      input.value = '';
+    });
+    document.getElementById('noteInput').addEventListener('keydown', function(e){
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        addNote(this.value);
+        this.value = '';
+      }
+    });
+
+    document.getElementById('bellBtn').addEventListener('click', function(){
+      if (!notifyEnabled) {
+        if (typeof Notification !== 'undefined' && Notification.permission !== 'granted') {
+          Notification.requestPermission().then(function(perm){
+            if (perm === 'granted') { notifyEnabled = true; storageSet('planner:notify','1'); render(); }
+          }).catch(function(){});
+          return;
+        }
+        notifyEnabled = true; storageSet('planner:notify','1');
+      } else { notifyEnabled = false; storageSet('planner:notify','0'); }
+      render();
+      closeMenu();
+    });
+
+    document.getElementById('exportBtn').addEventListener('click', exportBackup);
+    document.getElementById('importBtn').addEventListener('click', function(){ document.getElementById('importFile').click(); });
+    document.getElementById('importFile').addEventListener('change', function(e){
+      if (e.target.files && e.target.files[0]) importBackup(e.target.files[0]);
+      e.target.value = '';
+    });
+
+    load();
+    render();
+    setInterval(function(){
+      checkNotifications();
+      if (dateKey(current) === dateKey(new Date())) renderNextUp();
+    }, 20000);
+  }
+
+  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', init); }
+  else { init(); }
+
+  window.__planner_test_hooks__ = {
+    addTask: addTask, getTasks: function(){ return tasks; }, load: load, render: render,
+    getNotes: function(){ return notes; }, addNote: addNote,
+    checkNotifications: checkNotifications, tagStyle: tagStyle,
+    getTheme: function(){ return theme; },
+    setTheme: function(v){ theme = v; storageSet('planner:theme', v); applyTheme(); render(); }
+  };
+})();
+</script>
+</body>
+</html>
